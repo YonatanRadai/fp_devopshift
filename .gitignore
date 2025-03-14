@@ -1,0 +1,11 @@
+fp_terraform/builder-key.pub
+fp_terraform/.terraform.lock.hcl
+fp_terraform/builder-key.pem
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.91.0/linux_amd64/LICENSE.txt
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/local/2.5.2/linux_amd64/LICENSE.txt
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/5.91.0/linux_amd64/terraform-provider-aws_v5.91.0_x5
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/local/2.5.2/linux_amd64/terraform-provider-local_v2.5.2_x5
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/tls/4.0.6/linux_amd64/LICENSE.txt
+fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/tls/4.0.6/linux_amd64/terraform-provider-tls_v4.0.6_x5
+fp_terraform/terraform.tfstate.backup
+fp_terraform/terraform.tfstate
