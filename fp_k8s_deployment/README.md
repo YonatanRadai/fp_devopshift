@@ -1,1 +1,1 @@
-make sure that the env variables are set.
+make sure that the env variables are set before apply the yaml (change their value).

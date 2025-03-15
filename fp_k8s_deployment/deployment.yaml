@@ -19,6 +19,7 @@ spec:
         image: yourusername/devops-exam:latest #change to your dockerhub username.
         ports:
         - containerPort: 5001
-        env:
-        - name: AWS_ACCESS_KEY_ID #taken from env variables
-        - name: AWS_SECRET_ACCESS_KEY #taken from env variables
+        - name: AWS_ACCESS_KEY_ID
+          value: "fake-access-key" 
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "fake-secret-key" 
