@@ -16,9 +16,9 @@ spec:
     spec:
       containers:
       - name: devops-exam
-        image: yourusername/devops-exam:latest #change to your dockerhub username.
+        image: httpd:latest  # דימוי זמני לתרגול, החלף ב-yourusername/devops-exam:latest אחר כך
         ports:
-        - containerPort: 5001
+        - containerPort: 80  # httpd משתמש ב-80, נשנה ל-5001 כשיהיה לך הדימוי שלך
         env:
-        - name: AWS_ACCESS_KEY_ID #taken from env variables
-        - name: AWS_SECRET_ACCESS_KEY #taken from env variables
+        - name: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
