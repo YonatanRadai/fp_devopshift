@@ -2,8 +2,8 @@
 provider "aws" {
   region                      = "us-east-1"
   # Delete the below code for a real AWS account.
-  access_key                  = "AKIAXLEKZJVVWAS4ACGC" 
-  secret_key                  = "NRi3SN9fDOxUdEzAZw+yastGMV1MkSxAJpYB3DBC"
+  access_key                  = "dummy" 
+  secret_key                  = "dummy"
   skip_credentials_validation = true
   skip_metadata_api_check     = true
   skip_requesting_account_id  = true
