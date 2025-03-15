@@ -1,0 +1,1 @@
+make sure that the env variables are set.

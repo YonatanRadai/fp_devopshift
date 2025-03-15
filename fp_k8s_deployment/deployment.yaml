@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-exam-deployment
+  labels:
+    app: devops-exam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-exam
+  template:
+    metadata:
+      labels:
+        app: devops-exam
+    spec:
+      containers:
+      - name: devops-exam
+        image: yourusername/devops-exam:latest #change to your dockerhub username.
+        ports:
+        - containerPort: 5001
+        env:
+        - name: AWS_ACCESS_KEY_ID #taken from env variables
+        - name: AWS_SECRET_ACCESS_KEY #taken from env variables
