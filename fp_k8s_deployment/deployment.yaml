@@ -20,6 +20,6 @@ spec:
         ports:
         - containerPort: 5001
         - name: AWS_ACCESS_KEY_ID
-          value: "fake-access-key" 
+          value: "AKIAXLEKZJVVWAS4ACGC" 
         - name: AWS_SECRET_ACCESS_KEY
-          value: "fake-secret-key" 
+          value: "NRi3SN9fDOxUdEzAZw+yastGMV1MkSxAJpYB3DBC" 
