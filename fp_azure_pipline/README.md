@@ -1,0 +1,1 @@
+create a PAT in dockerhub then when creating the pipeline use it as a variable name yonatantoken. 
