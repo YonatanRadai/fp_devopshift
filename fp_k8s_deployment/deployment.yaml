@@ -16,9 +16,12 @@ spec:
     spec:
       containers:
       - name: devops-exam
-        image: httpd:latest  # דימוי זמני לתרגול, החלף ב-yourusername/devops-exam:latest אחר כך
+        image: python:3.9
         ports:
-        - containerPort: 80  # httpd משתמש ב-80, נשנה ל-5001 כשיהיה לך הדימוי שלך
+        - containerPort: 80
         env:
         - name: AWS_ACCESS_KEY_ID
+          value: "fake-access-key"  # ערך לדוגמה
         - name: AWS_SECRET_ACCESS_KEY
+          value: "fake-secret-key"  # ערך לדוגמה
+        command: ["python", "-m", "http.server", "80"]
