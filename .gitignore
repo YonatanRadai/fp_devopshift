@@ -9,3 +9,4 @@ fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/tls/4.0.6/linu
 fp_terraform/.terraform/providers/registry.terraform.io/hashicorp/tls/4.0.6/linux_amd64/terraform-provider-tls_v4.0.6_x5
 fp_terraform/terraform.tfstate.backup
 fp_terraform/terraform.tfstate
+.env
