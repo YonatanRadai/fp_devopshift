@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: devops-exam
-        image: yourusername/devops-exam:latest #change to your dockerhub username.
+        image: python:3.9
         ports:
         - containerPort: 5001
         - name: AWS_ACCESS_KEY_ID

@@ -7,6 +7,6 @@ spec:
     app: devops-exam
   ports:
   - protocol: TCP
-    port: 80  # the external port
-    targetPort: 5001  # the internal port of the container
-  type: LoadBalancer 
+    port: 80
+    targetPort: 5001 
+  type: LoadBalancer
