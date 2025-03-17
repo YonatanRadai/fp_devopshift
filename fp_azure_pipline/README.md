@@ -16,6 +16,7 @@ This directory contains Azure Pipeline configuration for the DevOpShift project,
 Docker Hub Credentials:
    - Create a Personal Access Token (PAT) in Docker Hub
    - Add it as a pipeline variable named `yonatantoken`
+   - add  AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to variable with the credential as secret.
 
 ### Pipeline Structure
 
