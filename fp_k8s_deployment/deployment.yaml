@@ -16,10 +16,6 @@ spec:
     spec:
       containers:
       - name: devops-exam
-        image: python:3.9
+        image: jonathanmradai/exam
         ports:
         - containerPort: 5001
-        - name: AWS_ACCESS_KEY_ID
-          value: "fake-access-key"  
-        - name: AWS_SECRET_ACCESS_KEY
-          value: "fake-secret-key" 
