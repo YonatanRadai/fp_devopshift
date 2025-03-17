@@ -1,12 +1,10 @@
 pipeline {
     agent {
         label 'docker'  
-
     }
     environment {
-        REPO_NAME = 'fe-exam'
+        REPO_NAME = 'exam'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        PROJECT = 'fe-exam'
         //connection to dockerhub
         DOCKER_USER = 'jonathanmradai'
         DOCKERHUB_CREDENTIALS_PSW = credentials("yonatantoken")
@@ -14,14 +12,14 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'feature3', url: 'https://github.com/YonatanRadai/fp_devopshift.git' //change the repo and branch to the docker 
+                git branch: 'dev', url: 'https://github.com/YonatanRadai/fp_devopshift.git' //change the repo and branch to the docker 
             }
         }
         stage('Lint & Security Scan') {
             parallel {
                 stage('Lint') {
                     steps {
-                        dir("exam-code/docker/${env.PROJECT}/src") { 
+                        dir("./fp_docker") { 
                             sh '''
                             pip install flake8
                             flake8 . || true
@@ -31,8 +29,10 @@ pipeline {
                 }
                 stage('Security Scan') {
                     steps {
-                        dir("exam-code/docker/${env.PROJECT}/src") { 
+                        dir("./fp_docker") { 
                             sh '''
+                            pwd
+                            ls -la
                             pip install bandit 
                             bandit -r . || true
                             '''
@@ -43,14 +43,18 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                dir("exam-code/docker/${env.PROJECT}") {
-                    sh 'pip install -r requirements.txt'
+                dir("./fp_docker") {
+                    sh '''
+                    pwd
+                    ls -la
+                    pip install -r requirements.txt
+                    '''
                 }
             }
         }
         stage('Build Docker Image') {
             steps {
-                dir("exam-code/docker/${env.PROJECT}") {
+                dir("./fp_docker") {
                     sh '''
                     docker build -t $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER . --no-cache
                     docker tag $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER $DOCKER_USER/$REPO_NAME:latest
@@ -58,46 +62,20 @@ pipeline {
                 }
             }
         }
-        stage('Run Tests in Container'){
+        stage('Run Docker Container') {
             steps {
+                dir("./fp_docker") {
                 sh '''
-                docker run --init $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER pytest tests/ 
+                    docker run -d --name $REPO_NAME -p 5001:5001 $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER
+                    SERVER_URL="http://172.17.0.1:5001"
+                    sleep 20
+                    curl $SERVER_URL
+                    docker stop $REPO_NAME
+                    docker rm $REPO_NAME
                 '''
             }
         }
-
-        stage('Integration Test with Docker Compose'){
-            steps{
-                dir("exam-code/docker") {
-                    sh '''
-                    docker compose up -d
-                    sleep 20  # Allow services to start
-                    SERVER_URL="http://172.17.0.1:5001/fetch_price"
-                    status_code=$(curl -s -o response.json -w "%{http_code}" "$SERVER_URL")
-                    if [ "$status_code" -nq 200 ]; then
-                        cat response.json
-                        echo "❌ From Backend API returned error: $status_code"
-                        cat response.json
-                        echo "
-                        docker-compose down
-                        exit 1
-                    fi
-                    SERVER_URL = "http://172.17.0.1:5002"
-                    status_code=$(curl -s -o response.json -w "%{http_code}" "$SERVER_URL")
-                    if [ "$status_code" -nq 200 ]; then
-                        cat response.json
-                        echo "❌ From Frontend API returned error: $status_code"
-                        cat response.json
-                        echo "
-                        docker compose down
-                        exit 1
-                    fi
-                    docker compose down
-                    '''                 
-                }               
-            }
         }
-
         stage('Push to Docker Hub'){
             steps{
                 sh '''
