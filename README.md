@@ -75,6 +75,3 @@ fp_devopshift/
 - Jenkins Community
 - Azure DevOps Documentation
 - Kubernetes Documentation
-
-
-
