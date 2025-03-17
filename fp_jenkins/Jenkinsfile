@@ -1,0 +1,105 @@
+pipeline {
+    agent {
+        label 'docker'  
+    }
+    environment {
+        REPO_NAME = 'exam'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        // Connection to DockerHub
+        DOCKER_USER = 'jonathanmradai'
+        DOCKERHUB_CREDENTIALS_PSW = credentials("yonatantoken")
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'dev', url: 'https://github.com/YonatanRadai/fp_devopshift.git'
+            }
+        }
+        stage('Lint & Security Scan') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        dir("./fp_docker") { 
+                            sh '''
+                            pip install flake8
+                            flake8 . || true
+                            '''
+                        }
+                    }
+                }
+                stage('Security Scan') {
+                    steps {
+                        dir("./fp_docker") { 
+                            sh '''
+                            pip install bandit 
+                            bandit -r . || true
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                dir("./fp_docker") {
+                    sh '''
+                    pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                dir("./fp_docker") {
+                    sh '''
+                    docker build -t $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER . --no-cache
+                    docker tag $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER $DOCKER_USER/$REPO_NAME:latest
+                    '''
+                }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                dir("./fp_docker") {
+                sh '''
+                    docker run -d --name $REPO_NAME -p 5001:5001 $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER
+                    SERVER_URL="http://172.17.0.1:5001"
+                    sleep 20 
+                    RESPONSE=$(curl -s -o response.html -w "%{http_code}" $SERVER_URL)
+                    if [ "$RESPONSE" -ne 200 ]; then
+                        echo "Error: Server did not return a 200 OK response"
+                        cat response.html
+                        exit 1
+                    fi
+
+                    echo "Server is running and returned HTTP 200 OK"
+                '''
+                }
+            }
+        }
+        stage('Push to Docker Hub') {
+            steps {
+                sh '''
+                echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKER_USER --password-stdin
+                docker push $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER
+                docker push $DOCKER_USER/$REPO_NAME:latest
+                '''
+            }
+        }
+        stage('Cleanup Docker Images & Containers') {
+            steps {
+                sh '''
+                echo "Stopping and removing the container..."
+                docker stop $REPO_NAME || true
+                docker rm $REPO_NAME || true
+
+                echo "Removing Docker images..."
+                docker rmi $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER || true
+                docker rmi $DOCKER_USER/$REPO_NAME:latest || true
+
+                echo "Cleanup complete."
+                '''
+            }
+        }
+    }
+}
