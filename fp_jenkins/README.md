@@ -21,7 +21,8 @@ The Jenkins pipeline includes the following stages:
 ### Credentials Setup
 
 Configure the following credentials in Jenkins:
-'yonatantoken' to the PAT of docker hub.
+'yonatantoken' to the PAT of docker hub and export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY with your credentials.
+
 
 
 ## Usage
