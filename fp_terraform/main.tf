@@ -94,18 +94,27 @@ resource "aws_instance" "builder" {
   tags = {
     Name = "yonatan-builder"
   }
-}
 
-# Outputs
-output "instance_public_ip" {
-  value = aws_instance.builder.public_ip
-}
+  # Remote execution for Docker & Docker Compose installation
+provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update -y",
+      "sudo apt-get install -y docker.io",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker",
+      "sudo usermod -aG docker ubuntu",
+      # Install Docker Compose
+      "sudo apt-get install -y curl",
+      "sudo curl -L 'https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)' '-o /usr/local/bin/docker-compose'",
+      "sudo chmod +x /usr/local/bin/docker-compose",
+      "sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose"
+    ]
 
-output "ssh_command" {
-  value = "ssh -i ~/.ssh/id_rsa.pub ubuntu@${aws_instance.builder.public_ip}"  
-}
-
-output "vpc_cidr_block" {
-  value       = data.aws_vpc.selected.cidr_block
-  description = "The CIDR block of the VPC"
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("~/.ssh/id_rsa")
+      host        = self.public_ip
+    }
+  }
 }
