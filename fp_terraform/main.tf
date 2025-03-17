@@ -1,45 +1,64 @@
 # main.tf
 provider "aws" {
-  region                      = "us-east-1"
-  # Delete the below code for a real AWS account.
-  access_key                  = "dummy" 
-  secret_key                  = "dummy"
-  skip_credentials_validation = true
-  skip_metadata_api_check     = true
-  skip_requesting_account_id  = true
-  endpoints {
-    ec2 = "http://localhost:4566"  # LocalStack endpoint
+  region = "us-east-1"
+}
+
+# Use existing manually created public key from ~/.ssh/
+resource "aws_key_pair" "builder_keypair" {
+  key_name   = "id_rsa.pub"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
+# VPC reference (using existing VPC)
+data "aws_vpc" "selected" {
+  id = "vpc-044604d0bfb707142"
+}
+
+# Get existing Internet Gateway attached to VPC
+data "aws_internet_gateway" "existing" {
+  filter {
+    name   = "attachment.vpc-id"
+    values = [data.aws_vpc.selected.id]
   }
 }
-# Generate SSH key pair
-resource "tls_private_key" "builder_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
+
+# Create a new public subnet
+resource "aws_subnet" "public" {
+  vpc_id                  = data.aws_vpc.selected.id
+  cidr_block              = "172.31.112.0/20"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "builder-public-subnet"
+  }
 }
 
-resource "aws_key_pair" "builder_keypair" {
-  key_name   = "builder-key"
-  public_key = tls_private_key.builder_key.public_key_openssh
+# Create a new route table
+resource "aws_route_table" "public" {
+  vpc_id = data.aws_vpc.selected.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = data.aws_internet_gateway.existing.internet_gateway_id
+  }
+
+  tags = {
+    Name = "builder-public-rt"
+  }
 }
 
-# Save private key to a file
-resource "local_file" "private_key" {
-  content  = tls_private_key.builder_key.private_key_pem
-  filename = "${path.module}/builder-key.pem"
-  file_permission = "0400"
-}
-
-# Save public key to a file
-resource "local_file" "public_key" {
-  content  = tls_private_key.builder_key.public_key_openssh
-  filename = "${path.module}/builder-key.pub"
-  file_permission = "0644"
+# Associate route table with subnet
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
 }
 
 # Security Group
 resource "aws_security_group" "builder_sg" {
   name        = "builder-security-group"
   description = "Security group for builder instance"
+  vpc_id      = data.aws_vpc.selected.id
 
   ingress {
     from_port   = 22
@@ -65,35 +84,16 @@ resource "aws_security_group" "builder_sg" {
 
 # EC2 Instance
 resource "aws_instance" "builder" {
-  ami           = "ami-0e1bed4f06a3b463d"  # Amazon Linux 2 AMI (region depended)
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.builder_keypair.key_name
-  security_groups = [aws_security_group.builder_sg.name]
+  ami                    = "ami-0e1bed4f06a3b463d"  # Amazon Linux 2 AMI
+  instance_type          = "t3.medium"
+  key_name               = aws_key_pair.builder_keypair.key_name
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.builder_sg.id]
+  depends_on             = [aws_key_pair.builder_keypair]
 
   tags = {
-    Name = "builder"
+    Name = "yonatan-builder"
   }
-
-  # Remote execution for Docker & Docker Compose installation
-  # Can work only using real AWS account
-#   provisioner "remote-exec" {
-#     inline = [
-#       "sudo yum update -y",
-#       "sudo amazon-linux-extras install docker -y",
-#       "sudo service docker start",
-#       "sudo usermod -a -G docker ec2-user",
-#       "curl -L 'https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose",
-#       "chmod +x /usr/local/bin/docker-compose",
-#       "ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose"
-#     ]
-
-#     connection {
-#       type        = "ssh"
-#       user        = "ec2-user"
-#       private_key = tls_private_key.builder_key.private_key_pem
-#       host        = self.public_ip
-#     }
-#   }
 }
 
 # Outputs
@@ -101,11 +101,11 @@ output "instance_public_ip" {
   value = aws_instance.builder.public_ip
 }
 
-output "ssh_private_key" {
-  value     = tls_private_key.builder_key.private_key_pem
-  sensitive = true
+output "ssh_command" {
+  value = "ssh -i ~/.ssh/id_rsa.pub ubuntu@${aws_instance.builder.public_ip}"  
 }
 
-output "ssh_command" {
-  value = "ssh -i builder-key.pem ec2-user@${aws_instance.builder.public_ip}"
+output "vpc_cidr_block" {
+  value       = data.aws_vpc.selected.cidr_block
+  description = "The CIDR block of the VPC"
 }
