@@ -23,10 +23,7 @@ fp_docker/
 Build the image using:
 
 ```bash
-docker build \
-  --build-arg AWS_ACCESS_KEY_ID=your_access_key \
-  --build-arg AWS_SECRET_ACCESS_KEY=your_secret_key \
-  -t devopshift .
+docker build \ -t devopshift .
 ```
 
 ## Running the Container
@@ -38,6 +35,7 @@ docker run -d \
   -p 5001:5001 \
   --name devopshift \
   devopshift
+  --env AWS_ACCESS_KEY_ID=your_AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=your_AWS_SECRET_ACCESS_KEY
 ```
 
 ## Environment Variables
@@ -68,15 +66,3 @@ If you encounter issues:
 2. Verify AWS credentials are set correctly
 3. Ensure port 5001 is available
 4. Check Python dependencies in requirements.txt
-
-## Development
-
-To build for development with hot-reload:
-
-```bash
-docker run -d \
-  -p 5001:5001 \
-  -v $(pwd):/app \
-  --name devopshift-dev \
-  devopshift
-```
