@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: jonathanmradai/exam # Replace with your Docker Hub image
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer  # Use ClusterIP for internal access, LoadBalancer for external
+  port: 5001
+
+aws:
+  accessKeyId: "your-aws-access-key-id"
+  secretAccessKey: "your-aws-secret-access-key"
+  region: "us-east-1"
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+ingress:
+  enabled: false
+  host: "flask-aws-monitor.example.com"
