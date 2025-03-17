@@ -29,27 +29,6 @@ fp_devopshift/
 - Kubernetes cluster access
 - Helm CLI tool (for Helm deployments)
 
-## Quick Start
-
-1. **Set up infrastructure:**
-```bash
-cd fp_terraform
-terraform init
-terraform apply
-```
-
-2. **Build Docker image:**
-```bash
-cd fp_docker
-docker build -t devopshift . 
-```
-
-3. **Deploy to Kubernetes:**
-```bash
-cd fp_k8s_deployment
-kubectl apply -f manifests/
-```
-
 ## Components
 
 ### Docker Configuration
