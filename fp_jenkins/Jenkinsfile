@@ -8,6 +8,8 @@ pipeline {
         // Connection to DockerHub
         DOCKER_USER = 'jonathanmradai'
         DOCKERHUB_CREDENTIALS_PSW = credentials("yonatantoken")
+        AWS_ACCESS_KEY_ID = credentials("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = credentials("AWS_SECRET_ACCESS_KEY")
     }
     stages {
         stage('Clone Repository') {
@@ -62,7 +64,7 @@ pipeline {
             steps {
                 dir("./fp_docker") {
                 sh '''
-                    docker run -d --name $REPO_NAME -p 5001:5001 $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER
+                    docker run -d --name $REPO_NAME -p 5001:5001 $DOCKER_USER/$REPO_NAME:$BUILD_NUMBER --env AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) --env AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
                     SERVER_URL="http://172.17.0.1:5001"
                     sleep 20 
                     RESPONSE=$(curl -s -o response.html -w "%{http_code}" $SERVER_URL)
